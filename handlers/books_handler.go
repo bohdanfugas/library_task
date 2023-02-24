@@ -11,16 +11,16 @@ import (
 )
 
 func HandleBookRequests(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		handleBooksGet(w, r)
-	} else if r.Method == "POST" {
-		handleBooksPost(w, r)
+	if r.Method == http.MethodGet {
+		getBooks(w, r)
+	} else if r.Method == http.MethodPost {
+		postBooks(w, r)
 	} else {
 		fmt.Println("supporting only POST and GET requests")
 	}
 }
 
-func handleBooksGet(w http.ResponseWriter, r *http.Request) {
+func getBooks(w http.ResponseWriter, r *http.Request) {
 	// unmarshal our JSON with books
 	var books []entities.Book
 	jsonFile := unmarshalBooksJson(&books)
@@ -35,7 +35,7 @@ func handleBooksGet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(books)
 }
 
-func handleBooksPost(w http.ResponseWriter, r *http.Request) {
+func postBooks(w http.ResponseWriter, r *http.Request) {
 	// unmarshall our books JSON
 	var books []entities.Book
 	jsonFile := unmarshalBooksJson(&books)
@@ -71,7 +71,11 @@ func unmarshalBooksJson(outSlice *[]entities.Book) *os.File {
 		fmt.Println(err)
 	}
 	byteValue, _ := io.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, outSlice)
+
+	err = json.Unmarshal(byteValue, outSlice)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	return jsonFile
 }

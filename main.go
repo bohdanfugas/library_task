@@ -9,6 +9,7 @@ import (
 	handlers "main/handlers"
 	utils "main/utils"
 	"net/http"
+	"time"
 )
 
 func main() {
@@ -49,7 +50,7 @@ func getBooksData() {
 	requestURL := "http://localhost:8080/books"
 	client := &http.Client{}
 
-	r, _ := http.NewRequest("GET", requestURL, nil)
+	r, _ := http.NewRequest(http.MethodGet, requestURL, nil)
 	resp, err := client.Do(r)
 	if err != nil {
 		fmt.Println("HTTP call failed:", err)
@@ -70,8 +71,11 @@ func postBooksData(newBook entities.Book) {
 		return
 	}
 
+	// timeout 500 ms
+	time.Sleep(500 * time.Millisecond)
+
 	client := http.Client{}
-	req, err := http.NewRequest("POST", "http://localhost:8080/books", bytes.NewBuffer(byteArr))
+	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/books", bytes.NewBuffer(byteArr))
 
 	resp, err := client.Do(req)
 	if err != nil {
