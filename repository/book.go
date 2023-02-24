@@ -8,14 +8,14 @@ import (
 )
 
 type BooksRepo interface {
-	GetBooks() ([]entities.Book, error)
-	SetBooks(newBooks []entities.Book) error
+	GetBooks() (entities.Books, error)
+	SetBooks(newBooks entities.Books) error
 	UnmarshalJson() error
-	MarshalJson(newBooks []entities.Book) ([]byte, error)
+	MarshalJson(newBooks entities.Books) ([]byte, error)
 }
 
 type booksRepo struct {
-	books []entities.Book
+	books entities.Books
 }
 
 func NewBookRepo() BooksRepo {
@@ -26,7 +26,7 @@ func CreateNewBook() entities.Book {
 	return entities.Book{}
 }
 
-func (b *booksRepo) GetBooks() ([]entities.Book, error) {
+func (b *booksRepo) GetBooks() (entities.Books, error) {
 	err := b.UnmarshalJson()
 
 	if err != nil {
@@ -36,7 +36,7 @@ func (b *booksRepo) GetBooks() ([]entities.Book, error) {
 	return b.books, nil
 }
 
-func (b *booksRepo) SetBooks(newBooks []entities.Book) error {
+func (b *booksRepo) SetBooks(newBooks entities.Books) error {
 	byteArr, err := b.MarshalJson(newBooks)
 
 	// update our JSON with users
@@ -65,7 +65,7 @@ func (b *booksRepo) UnmarshalJson() error {
 	return nil
 }
 
-func (b *booksRepo) MarshalJson(newBooks []entities.Book) ([]byte, error) {
+func (b *booksRepo) MarshalJson(newBooks entities.Books) ([]byte, error) {
 	byteArr, err := json.MarshalIndent(&newBooks, "", "\t")
 
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"io"
 	"main/repository"
 	"net/http"
+	"sort"
 )
 
 func HandleBookRequests(w http.ResponseWriter, r *http.Request) {
@@ -21,18 +22,14 @@ func HandleBookRequests(w http.ResponseWriter, r *http.Request) {
 func getBooks(w http.ResponseWriter, r *http.Request) {
 	booksRepo := repository.NewBookRepo()
 	books, err := booksRepo.GetBooks()
-
 	if err != nil {
 		println(err)
 		return
 	}
 
-	// // sort by date
-	// sort.Slice(books, func(i, j int) bool {
-	// 	return books[i].Year < books[j].Year
-	// })
+	// sort by date
+	sort.Sort(books)
 
-	// write sorted books slice
 	json.NewEncoder(w).Encode(books)
 }
 
@@ -49,6 +46,7 @@ func postBooks(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	newBook := repository.CreateNewBook()
 	json.Unmarshal(newBookByteValue, &newBook)
 
