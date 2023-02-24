@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	entities "main/entities"
+	"main/repository"
 	"net/http"
-	"os"
-	"sort"
 )
 
 func HandleBookRequests(w http.ResponseWriter, r *http.Request) {
@@ -21,61 +19,45 @@ func HandleBookRequests(w http.ResponseWriter, r *http.Request) {
 }
 
 func getBooks(w http.ResponseWriter, r *http.Request) {
-	// unmarshal our JSON with books
-	var books []entities.Book
-	jsonFile := unmarshalBooksJson(&books)
-	defer jsonFile.Close()
+	booksRepo := repository.NewBookRepo()
+	books, err := booksRepo.GetBooks()
 
-	// sort by date
-	sort.Slice(books, func(i, j int) bool {
-		return books[i].Year < books[j].Year
-	})
+	if err != nil {
+		println(err)
+		return
+	}
+
+	// // sort by date
+	// sort.Slice(books, func(i, j int) bool {
+	// 	return books[i].Year < books[j].Year
+	// })
 
 	// write sorted books slice
 	json.NewEncoder(w).Encode(books)
 }
 
 func postBooks(w http.ResponseWriter, r *http.Request) {
-	// unmarshall our books JSON
-	var books []entities.Book
-	jsonFile := unmarshalBooksJson(&books)
-	defer jsonFile.Close()
+	booksRepo := repository.NewBookRepo()
+	books, err := booksRepo.GetBooks()
+	if err != nil {
+		println(err)
+		return
+	}
 
 	// unmarshall req body
 	newBookByteValue, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
 	}
-	var newBook entities.Book
+	newBook := repository.CreateNewBook()
 	json.Unmarshal(newBookByteValue, &newBook)
 
 	// add new book to books slice
 	books = append(books, newBook)
 
-	// marshal books to JSON
-	byteArr, err := json.MarshalIndent(books, "", "\t")
+	err = booksRepo.SetBooks(books)
 	if err != nil {
-		fmt.Println(err)
+		println(err)
+		return
 	}
-
-	// update our JSON with users
-	err = os.WriteFile("database/books.json", byteArr, 0666)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
-func unmarshalBooksJson(outSlice *[]entities.Book) *os.File {
-	jsonFile, err := os.Open("database/books.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	byteValue, _ := io.ReadAll(jsonFile)
-
-	err = json.Unmarshal(byteValue, outSlice)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return jsonFile
 }
